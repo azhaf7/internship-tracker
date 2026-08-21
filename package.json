@@ -1,0 +1,17 @@
+{
+  "name": "internship-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Track internship and job applications from wishlist to offer, with the companies and interviews attached to each one.",
+  "scripts": {
+    "dev": "ulimit -n 8192 && concurrently -n server,client -c cyan,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "seed": "npm run seed --prefix server",
+    "start": "npm start --prefix server",
+    "erd": "node docs/generate-erd.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "concurrently": "^9.1.2"
+  }
+}
