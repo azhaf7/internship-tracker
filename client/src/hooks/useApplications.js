@@ -3,7 +3,7 @@ import { api } from '../api/client.js';
 
 const REFRESH_INTERVAL_MS = 15000;
 
-export function useApplications() {
+export function useApplications(stage = 'all', search = '') {
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,7 @@ export function useApplications() {
     if (showSpinner) setLoading(true);
 
     try {
-      const data = await api.getApplications();
+      const data = await api.getApplications({ stage, search });
       setApplications(data);
       setError(null);
       setLastUpdated(new Date());
@@ -22,7 +22,7 @@ export function useApplications() {
     } finally {
       if (showSpinner) setLoading(false);
     }
-  }, []);
+  }, [stage, search]);
 
   useEffect(() => {
     let cancelled = false;
@@ -30,7 +30,7 @@ export function useApplications() {
     async function initialLoad() {
       setLoading(true);
       try {
-        const data = await api.getApplications();
+        const data = await api.getApplications({ stage, search });
         if (cancelled) return;
         setApplications(data);
         setError(null);
@@ -54,7 +54,7 @@ export function useApplications() {
       cancelled = true;
       clearInterval(intervalId);
     };
-  }, [load]);
+  }, [load, stage, search]);
 
   return { applications, loading, error, lastUpdated, refresh: load };
 }

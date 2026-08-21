@@ -23,7 +23,13 @@ async function request(path, options = {}) {
 }
 
 export const api = {
-  getApplications: () => request('/applications'),
+  getApplications: ({ stage, search } = {}) => {
+    const params = new URLSearchParams();
+    if (stage && stage !== 'all') params.set('stage', stage);
+    if (search?.trim()) params.set('search', search.trim());
+    const query = params.toString();
+    return request(`/applications${query ? `?${query}` : ''}`);
+  },
   getApplication: (id) => request(`/applications/${id}`),
   createApplication: (body) =>
     request('/applications', { method: 'POST', body: JSON.stringify(body) }),

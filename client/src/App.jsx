@@ -27,7 +27,6 @@ const STAGE_TITLES = {
 };
 
 export default function App() {
-  const { applications, loading, error, lastUpdated, refresh } = useApplications();
   const [companies, setCompanies] = useState([]);
   const [search, setSearch] = useState('');
   const [stage, setStage] = useState('all');
@@ -37,33 +36,22 @@ export default function App() {
   const [view, setView] = useState('board');
   const [statsToken, setStatsToken] = useState(0);
 
+  const { applications, loading, error, lastUpdated, refresh } = useApplications(stage, search);
   const { stats, loading: statsLoading, error: statsError } = usePipelineStats(statsToken);
 
   useEffect(() => {
     api.getCompanies().then(setCompanies).catch(() => setCompanies([]));
   }, []);
 
+  // Dock badges must stay global even when the list is filtered, so they
+  // come from the stats endpoint rather than the current page of rows.
   const counts = useMemo(() => {
-    const tally = { all: applications.length };
-    for (const application of applications) {
-      tally[application.stage] = (tally[application.stage] ?? 0) + 1;
+    const tally = { all: stats?.total ?? 0 };
+    for (const row of stats?.stages ?? []) {
+      tally[row.stage] = row.count;
     }
     return tally;
-  }, [applications]);
-
-  const visible = useMemo(() => {
-    const term = search.trim().toLowerCase();
-
-    return applications.filter((application) => {
-      const matchesStage = stage === 'all' || application.stage === stage;
-      const matchesSearch =
-        term === '' ||
-        application.role.toLowerCase().includes(term) ||
-        (application.companyId?.name ?? '').toLowerCase().includes(term);
-
-      return matchesStage && matchesSearch;
-    });
-  }, [applications, search, stage]);
+  }, [stats]);
 
   async function afterMutation() {
     await refresh();
@@ -170,7 +158,7 @@ export default function App() {
             <TableToolbar
               search={search}
               stage={stage}
-              resultCount={visible.length}
+              resultCount={applications.length}
               onClear={clearFilters}
             >
               <ViewToggle view={view} onChange={setView} />
@@ -180,12 +168,12 @@ export default function App() {
             {error && <p className="alert alert--error">Could not load applications: {error}</p>}
 
             {!loading && !error && view === 'table' && (
-              <ApplicationsTable applications={visible} onOpen={setViewing} onEdit={setEditing} />
+              <ApplicationsTable applications={applications} onOpen={setViewing} onEdit={setEditing} />
             )}
 
             {!loading && !error && view === 'board' && (
               <KanbanBoard
-                applications={visible}
+                applications={applications}
                 stage={stage}
                 onMoveStage={handleMoveStage}
                 onOpen={setViewing}

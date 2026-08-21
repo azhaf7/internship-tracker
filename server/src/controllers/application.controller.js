@@ -3,9 +3,26 @@ import Company from '../models/Company.js';
 import Interview from '../models/Interview.js';
 import ApiError from '../middleware/ApiError.js';
 
+function escapeRegex(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export async function listApplications(req, res, next) {
   try {
-    const applications = await Application.find()
+    const filter = {};
+    if (req.query.stage && req.query.stage !== 'all') filter.stage = req.query.stage;
+
+    const term = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    if (term) {
+      const safe = escapeRegex(term);
+      const matchingCompanies = await Company.find({ name: { $regex: safe, $options: 'i' } }).select('_id');
+      filter.$or = [
+        { role: { $regex: safe, $options: 'i' } },
+        { companyId: { $in: matchingCompanies.map((company) => company._id) } }
+      ];
+    }
+
+    const applications = await Application.find(filter)
       .populate('companyId', 'name industry location')
       .sort({ priority: -1, updatedAt: -1 });
 
