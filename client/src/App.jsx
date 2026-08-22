@@ -128,7 +128,7 @@ export default function App() {
           {onDashboard ? (
             <>
               <div className="greeting">
-                <h1>Hello</h1>
+                <h1>Job hunt overview</h1>
                 <p>
                   Track your applications, manage interviews, and take control of your career journey.
                 </p>
