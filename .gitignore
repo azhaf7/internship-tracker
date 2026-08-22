@@ -8,3 +8,7 @@ build/
 npm-debug.log*
 coverage/
 .vscode/
+
+# Lab report is submitted as PDF, not via the repo
+REPORT.md
+REPORT.pdf
