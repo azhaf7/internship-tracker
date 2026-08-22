@@ -6,6 +6,7 @@ import Icon from './Icon.jsx';
 
 const INTERVIEW_TYPES = ['phone', 'technical', 'behavioural', 'onsite', 'case'];
 const INTERVIEW_OUTCOMES = ['scheduled', 'passed', 'failed', 'cancelled'];
+const STAGES_THAT_ALLOW_ROUNDS = new Set(['screening', 'interview', 'offer']);
 
 const INTERVIEW_LABELS = {
   phone: 'Phone screen',
@@ -135,6 +136,7 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
   }
 
   const company = detail.companyId;
+  const canAddRounds = STAGES_THAT_ALLOW_ROUNDS.has(detail.stage);
 
   return (
     <Modal
@@ -210,7 +212,7 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
             Interview rounds
             <span className="kcol__count">{loading ? '…' : interviews.length}</span>
           </h3>
-          {!loading && (
+          {!loading && canAddRounds && (
             <button
               type="button"
               className="btn btn--ghost btn--sm"
@@ -228,7 +230,13 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
 
         {interviewError && <p className="alert alert--error">{interviewError}</p>}
 
-        {showForm && (
+        {!loading && !canAddRounds && (
+          <p className="detail__empty">
+            Move this application to screening, interview, or offer to add interview rounds.
+          </p>
+        )}
+
+        {showForm && canAddRounds && (
           <form className="interview-form" onSubmit={handleAddInterview}>
             <div className="field-row">
               <label className="field">
@@ -322,7 +330,7 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
           </form>
         )}
 
-        {!loading && interviews.length === 0 && !showForm && (
+        {!loading && interviews.length === 0 && !showForm && canAddRounds && (
           <p className="detail__empty">No interview rounds recorded for this application yet.</p>
         )}
 
@@ -335,13 +343,15 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
                   <div className="round__top">
                     <span className="round__type">{INTERVIEW_LABELS[interview.type] ?? interview.type}</span>
                     <span className={`badge badge--outcome-${interview.outcome}`}>{interview.outcome}</span>
-                    <button
-                      type="button"
-                      className="round__delete"
-                      onClick={() => handleDeleteInterview(interview._id)}
-                    >
-                      Remove
-                    </button>
+                    {canAddRounds && (
+                      <button
+                        type="button"
+                        className="round__delete"
+                        onClick={() => handleDeleteInterview(interview._id)}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                   <p className="round__meta">
                     {formatDateTime(interview.scheduledAt)}
