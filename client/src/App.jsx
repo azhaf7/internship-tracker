@@ -57,14 +57,30 @@ export default function App() {
     setStatsToken((token) => token + 1);
   }
 
-  async function handleCreate(payload) {
-    await api.createApplication(payload);
+  async function handleCreate(payload, interviews = []) {
+    const created = await api.createApplication(payload);
+
+    for (const interview of interviews) {
+      await api.createInterview({
+        applicationId: created._id,
+        ...interview
+      });
+    }
+
     await afterMutation();
     setCreating(false);
   }
 
-  async function handleUpdate(id, payload) {
+  async function handleUpdate(id, payload, interviews = []) {
     await api.updateApplication(id, payload);
+
+    for (const interview of interviews) {
+      await api.createInterview({
+        applicationId: id,
+        ...interview
+      });
+    }
+
     await afterMutation();
   }
 

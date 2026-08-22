@@ -1191,6 +1191,16 @@ button {
   margin-bottom: 0;
 }
 
+.create-rounds {
+  margin: 16px 0 4px;
+}
+
+.create-rounds__hint {
+  margin: -4px 0 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 .interview-form {
   margin-bottom: 14px;
   padding: 12px;
