@@ -128,9 +128,7 @@ export default function App() {
           {onDashboard ? (
             <>
               <div className="greeting">
-                <h1>
-                  Hello, Azhaf <span className="greeting__wave">👋</span>
-                </h1>
+                <h1>Hello</h1>
                 <p>
                   Track your applications, manage interviews, and take control of your career journey.
                 </p>
