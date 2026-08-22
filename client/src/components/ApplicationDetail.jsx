@@ -4,6 +4,9 @@ import Modal from './Modal.jsx';
 import StatusBadge from './StatusBadge.jsx';
 import Icon from './Icon.jsx';
 
+const INTERVIEW_TYPES = ['phone', 'technical', 'behavioural', 'onsite', 'case'];
+const INTERVIEW_OUTCOMES = ['scheduled', 'passed', 'failed', 'cancelled'];
+
 const INTERVIEW_LABELS = {
   phone: 'Phone screen',
   technical: 'Technical',
@@ -32,18 +35,39 @@ function formatMoney(value) {
   return value ? `${value.toLocaleString('sv-SE')} kr / month` : '—';
 }
 
+function emptyInterviewForm(nextRound) {
+  return {
+    round: String(nextRound),
+    type: 'technical',
+    scheduledAt: '',
+    interviewer: '',
+    durationMinutes: '60',
+    outcome: 'scheduled',
+    notes: ''
+  };
+}
+
 export default function ApplicationDetail({ application, onEdit, onClose }) {
   const [detail, setDetail] = useState(application);
   const [interviews, setInterviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [interviewForm, setInterviewForm] = useState(() => emptyInterviewForm(1));
+  const [savingInterview, setSavingInterview] = useState(false);
+  const [interviewError, setInterviewError] = useState(null);
+
+  async function reloadInterviews() {
+    const related = await api.getApplicationInterviews(application._id);
+    setInterviews(related.interviews);
+    return related.interviews;
+  }
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        // List payload is slim; pull the full company + interviews here.
         const [full, related] = await Promise.all([
           api.getApplication(application._id),
           api.getApplicationInterviews(application._id)
@@ -52,6 +76,7 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
         if (cancelled) return;
         setDetail(full);
         setInterviews(related.interviews);
+        setInterviewForm(emptyInterviewForm(related.interviews.length + 1));
         setError(null);
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -65,6 +90,49 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
       cancelled = true;
     };
   }, [application._id]);
+
+  function updateInterviewField(field, value) {
+    setInterviewForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleAddInterview(event) {
+    event.preventDefault();
+    setSavingInterview(true);
+    setInterviewError(null);
+
+    try {
+      await api.createInterview({
+        applicationId: application._id,
+        round: Number(interviewForm.round),
+        type: interviewForm.type,
+        scheduledAt: interviewForm.scheduledAt,
+        interviewer: interviewForm.interviewer.trim() || undefined,
+        durationMinutes:
+          interviewForm.durationMinutes === '' ? undefined : Number(interviewForm.durationMinutes),
+        outcome: interviewForm.outcome,
+        notes: interviewForm.notes.trim() || undefined
+      });
+
+      const updated = await reloadInterviews();
+      setInterviewForm(emptyInterviewForm(updated.length + 1));
+      setShowForm(false);
+    } catch (err) {
+      setInterviewError(err.details?.join(' · ') ?? err.message);
+    } finally {
+      setSavingInterview(false);
+    }
+  }
+
+  async function handleDeleteInterview(id) {
+    setInterviewError(null);
+    try {
+      await api.deleteInterview(id);
+      const updated = await reloadInterviews();
+      setInterviewForm(emptyInterviewForm(updated.length + 1));
+    } catch (err) {
+      setInterviewError(err.message);
+    }
+  }
 
   const company = detail.companyId;
 
@@ -137,14 +205,124 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
       )}
 
       <div className="detail__block">
-        <h3 className="detail__heading">
-          Interview rounds
-          <span className="kcol__count">{loading ? '…' : interviews.length}</span>
-        </h3>
+        <div className="detail__heading-row">
+          <h3 className="detail__heading">
+            Interview rounds
+            <span className="kcol__count">{loading ? '…' : interviews.length}</span>
+          </h3>
+          {!loading && (
+            <button
+              type="button"
+              className="btn btn--ghost btn--sm"
+              onClick={() => {
+                setShowForm((open) => !open);
+                setInterviewError(null);
+              }}
+            >
+              {showForm ? 'Cancel' : 'Add round'}
+            </button>
+          )}
+        </div>
 
         {loading && <p className="loading">Loading interview rounds...</p>}
 
-        {!loading && interviews.length === 0 && (
+        {interviewError && <p className="alert alert--error">{interviewError}</p>}
+
+        {showForm && (
+          <form className="interview-form" onSubmit={handleAddInterview}>
+            <div className="field-row">
+              <label className="field">
+                Round
+                <input
+                  type="number"
+                  min="1"
+                  max="8"
+                  value={interviewForm.round}
+                  onChange={(e) => updateInterviewField('round', e.target.value)}
+                  required
+                />
+              </label>
+              <label className="field">
+                Type
+                <select
+                  value={interviewForm.type}
+                  onChange={(e) => updateInterviewField('type', e.target.value)}
+                >
+                  {INTERVIEW_TYPES.map((type) => (
+                    <option key={type} value={type}>
+                      {INTERVIEW_LABELS[type] ?? type}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <div className="field-row">
+              <label className="field">
+                When
+                <input
+                  type="datetime-local"
+                  value={interviewForm.scheduledAt}
+                  onChange={(e) => updateInterviewField('scheduledAt', e.target.value)}
+                  required
+                />
+              </label>
+              <label className="field">
+                Duration (min)
+                <input
+                  type="number"
+                  min="15"
+                  max="480"
+                  value={interviewForm.durationMinutes}
+                  onChange={(e) => updateInterviewField('durationMinutes', e.target.value)}
+                />
+              </label>
+            </div>
+
+            <div className="field-row">
+              <label className="field">
+                Interviewer
+                <input
+                  type="text"
+                  value={interviewForm.interviewer}
+                  onChange={(e) => updateInterviewField('interviewer', e.target.value)}
+                  placeholder="Optional"
+                />
+              </label>
+              <label className="field">
+                Outcome
+                <select
+                  value={interviewForm.outcome}
+                  onChange={(e) => updateInterviewField('outcome', e.target.value)}
+                >
+                  {INTERVIEW_OUTCOMES.map((outcome) => (
+                    <option key={outcome} value={outcome}>
+                      {outcome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            <label className="field">
+              Notes
+              <textarea
+                rows="2"
+                value={interviewForm.notes}
+                onChange={(e) => updateInterviewField('notes', e.target.value)}
+                placeholder="Optional"
+              />
+            </label>
+
+            <div className="modal__actions">
+              <button type="submit" className="btn btn--primary" disabled={savingInterview}>
+                {savingInterview ? 'Saving...' : 'Save round'}
+              </button>
+            </div>
+          </form>
+        )}
+
+        {!loading && interviews.length === 0 && !showForm && (
           <p className="detail__empty">No interview rounds recorded for this application yet.</p>
         )}
 
@@ -157,6 +335,13 @@ export default function ApplicationDetail({ application, onEdit, onClose }) {
                   <div className="round__top">
                     <span className="round__type">{INTERVIEW_LABELS[interview.type] ?? interview.type}</span>
                     <span className={`badge badge--outcome-${interview.outcome}`}>{interview.outcome}</span>
+                    <button
+                      type="button"
+                      className="round__delete"
+                      onClick={() => handleDeleteInterview(interview._id)}
+                    >
+                      Remove
+                    </button>
                   </div>
                   <p className="round__meta">
                     {formatDateTime(interview.scheduledAt)}

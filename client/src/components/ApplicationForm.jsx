@@ -10,6 +10,7 @@ const EMPTY_FORM = {
   jobType: 'internship',
   stage: 'wishlist',
   appliedDate: '',
+  deadline: '',
   salaryExpectation: '',
   source: 'LinkedIn',
   priority: 3,
@@ -34,7 +35,8 @@ export default function ApplicationForm({ companies, onCreate, onCancel }) {
       ...form,
       priority: Number(form.priority),
       salaryExpectation: form.salaryExpectation === '' ? undefined : Number(form.salaryExpectation),
-      appliedDate: form.appliedDate === '' ? undefined : form.appliedDate
+      appliedDate: form.appliedDate === '' ? undefined : form.appliedDate,
+      deadline: form.deadline === '' ? undefined : form.deadline
     };
 
     try {
@@ -108,6 +110,15 @@ export default function ApplicationForm({ companies, onCreate, onCancel }) {
           />
         </label>
       </div>
+
+      <label className="field">
+        Deadline
+        <input
+          type="date"
+          value={form.deadline}
+          onChange={(e) => update('deadline', e.target.value)}
+        />
+      </label>
 
       <div className="field-row">
         <label className="field">

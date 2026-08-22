@@ -3,12 +3,19 @@ import Modal from './Modal.jsx';
 
 const STAGES = ['wishlist', 'applied', 'screening', 'interview', 'offer', 'rejected'];
 
+function toDateInput(value) {
+  if (!value) return '';
+  return new Date(value).toISOString().slice(0, 10);
+}
+
 export default function EditModal({ application, onSave, onDelete, onClose }) {
   const [form, setForm] = useState({
     role: application.role,
     stage: application.stage,
     priority: application.priority,
     salaryExpectation: application.salaryExpectation ?? '',
+    appliedDate: toDateInput(application.appliedDate),
+    deadline: toDateInput(application.deadline),
     notes: application.notes ?? ''
   });
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -28,7 +35,9 @@ export default function EditModal({ application, onSave, onDelete, onClose }) {
       await onSave(application._id, {
         ...form,
         priority: Number(form.priority),
-        salaryExpectation: form.salaryExpectation === '' ? undefined : Number(form.salaryExpectation)
+        salaryExpectation: form.salaryExpectation === '' ? undefined : Number(form.salaryExpectation),
+        appliedDate: form.appliedDate === '' ? null : form.appliedDate,
+        deadline: form.deadline === '' ? null : form.deadline
       });
       onClose();
     } catch (err) {
@@ -84,6 +93,26 @@ export default function EditModal({ application, onSave, onDelete, onClose }) {
               max="5"
               value={form.priority}
               onChange={(e) => update('priority', e.target.value)}
+            />
+          </label>
+        </div>
+
+        <div className="field-row">
+          <label className="field">
+            Applied on
+            <input
+              type="date"
+              value={form.appliedDate}
+              onChange={(e) => update('appliedDate', e.target.value)}
+            />
+          </label>
+
+          <label className="field">
+            Deadline
+            <input
+              type="date"
+              value={form.deadline}
+              onChange={(e) => update('deadline', e.target.value)}
             />
           </label>
         </div>

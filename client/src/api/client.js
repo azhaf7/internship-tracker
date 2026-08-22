@@ -36,6 +36,9 @@ export const api = {
     request(`/applications/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
   deleteApplication: (id) => request(`/applications/${id}`, { method: 'DELETE' }),
   getApplicationInterviews: (id) => request(`/applications/${id}/interviews`),
+  createInterview: (body) =>
+    request('/interviews', { method: 'POST', body: JSON.stringify(body) }),
+  deleteInterview: (id) => request(`/interviews/${id}`, { method: 'DELETE' }),
   getCompanies: () => request('/companies'),
   getCompanyApplications: (id) => request(`/companies/${id}/applications`),
   getPipelineStats: () => request('/stats/pipeline')
