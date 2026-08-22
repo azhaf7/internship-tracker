@@ -1,4 +1,4 @@
-# Internship Tracker — Lab Report
+# Internship Tracker - Lab Report
 
 **Course:** DA219B Fullstack Lab, Kristianstad University  
 **Stack:** React (Vite) · Express.js · MongoDB Atlas · Mongoose
@@ -13,26 +13,26 @@ Internship Tracker helps a student follow internship applications from wishlist 
 
 | Collection | Role | Links to |
 | --- | --- | --- |
-| `companies` | Employers | — |
-| `applications` | One role at one company (main entity) | `companyId → companies` |
-| `interviews` | Interview rounds | `applicationId → applications` |
-| `contacts` | Recruiters / contacts | `companyId → companies` |
+| `companies` | Employers | none (others link here) |
+| `applications` | One role at one company (main entity) | `companyId -> companies` |
+| `interviews` | Interview rounds | `applicationId -> applications` |
+| `contacts` | Recruiters / contacts | `companyId -> companies` |
 
 **Custom field:** `stage` on applications (`wishlist`, `applied`, `screening`, `interview`, `offer`, `rejected`). The UI and stats are built around this field. Companies and interviews stay in separate collections so data can grow without copying the same company into every application. A unique index on `companyId + role` stops duplicates.
 
 ## 3. Two API endpoints
 
-**`POST /api/applications`** — creates an application after checking the company exists and the role is not already tracked.
+**`POST /api/applications`:** creates an application after checking the company exists and the role is not already tracked.
 
 Request body (example):
 
 ```json
-{ "companyId": "66b1…", "role": "Backend Intern", "jobType": "internship", "stage": "applied", "priority": 5 }
+{ "companyId": "66b1...", "role": "Backend Intern", "jobType": "internship", "stage": "applied", "priority": 5 }
 ```
 
 Success: `201` with the saved document (`companyId` populated). Errors: `400` validation, `404` missing company, `409` duplicate role at that company.
 
-**`GET /api/stats/pipeline`** — custom stats endpoint. Groups applications by `stage` and returns dashboard numbers (totals, offers, response rate, count per stage).
+**`GET /api/stats/pipeline`:** custom stats endpoint. Groups applications by `stage` and returns dashboard numbers (totals, offers, response rate, count per stage).
 
 ```json
 { "total": 10, "active": 8, "offers": 2, "responseRate": 70, "stages": [{ "stage": "interview", "count": 2 }] }
@@ -48,6 +48,6 @@ Success: `201` with the saved document (`companyId` populated). Errors: `400` va
 
 ## 5. Feature iteration: stage filtering
 
-**First** — commit `0d3d50f` (*feat: add stage and search filtering to the applications view*): the API returned every application; the browser filtered with `useMemo`. Easy, but the 15-second refresh still downloaded the full list.
+**First:** commit `0d3d50f` (*feat: add stage and search filtering to the applications view*). The API returned every application; the browser filtered with `useMemo`. Easy, but the 15-second refresh still downloaded the full list.
 
-**Second** — commit `7f08586` (*refactor: move stage filtering to a backend query param*): the API accepts `?stage=` and `?search=` and filters in MongoDB. Only matching rows are returned. Dock badges still use `/api/stats/pipeline` so counts stay global. This keeps payloads small as data grows and is easy to test in Postman.
+**Second:** commit `7f08586` (*refactor: move stage filtering to a backend query param*). The API accepts `?stage=` and `?search=` and filters in MongoDB. Only matching rows are returned. Dock badges still use `/api/stats/pipeline` so counts stay global. This keeps payloads small as data grows and is easy to test in Postman.

@@ -4,8 +4,6 @@
 
 Built for DA219B Fullstack Lab at Kristianstad University. React (Vite) frontend, Express API, MongoDB Atlas.
 
----
-
 ## Quick start (under 5 minutes)
 
 ### 1. Clone and install
@@ -21,9 +19,9 @@ npm run install:all
 You need a free MongoDB Atlas cluster and a connection string.
 
 1. Sign up at [https://cloud.mongodb.com](https://cloud.mongodb.com) and create a free **M0** cluster.
-2. **Database Access** → Add a database user (username + password). Save the password.
-3. **Network Access** → Add IP Address → **Allow access from anywhere** (`0.0.0.0/0`) for local work.
-4. **Database** → **Connect** → **Drivers** → copy the URI.
+2. **Database Access** -> Add a database user (username + password). Save the password.
+3. **Network Access** -> Add IP Address -> **Allow access from anywhere** (`0.0.0.0/0`) for local work.
+4. **Database** -> **Connect** -> **Drivers** -> copy the URI.
 5. In the URI, replace `<password>` with your real password and put the database name `internship_tracker` before the `?`:
 
 ```
@@ -65,8 +63,6 @@ npm run dev
 
 One command starts both (via `concurrently`). Vite proxies `/api` to the backend.
 
----
-
 ## Scripts
 
 | Command | What it does |
@@ -77,25 +73,21 @@ One command starts both (via `concurrently`). Vite proxies `/api` to the backend
 | `npm start` | Start API only |
 | `npm run erd` | Regenerate `docs/erd.png` from the schemas |
 
----
-
 ## Data model
 
 ```
-companies ──< applications ──< interviews
-    └──< contacts
+companies -< applications -< interviews
+         +- contacts
 ```
 
 | Collection | Purpose |
 | --- | --- |
 | `companies` | Employers |
-| `applications` | Main entity — one role at one company (`stage` = pipeline position) |
+| `applications` | Main entity: one role at one company (`stage` = pipeline position) |
 | `interviews` | Rounds for an application |
 | `contacts` | People at a company |
 
 Relationships use `ObjectId` + `.populate()`. See `docs/erd.png` and `REPORT.md`.
-
----
 
 ## API (base: `http://localhost:5050/api`)
 
@@ -125,8 +117,6 @@ Relationships use `ObjectId` + `.populate()`. See `docs/erd.png` and `REPORT.md`
 
 Errors always look like `{ "error": "...", "details": [...] }` with status `400`, `404`, `409`, or `500`.
 
----
-
 ## Project structure
 
 ```
@@ -137,7 +127,7 @@ internship-tracker/
 │   └── src/
 │       ├── index.js / app.js
 │       ├── models/       # Company, Application, Interview, Contact
-│       ├── routes/       # Router → middleware → controller
+│       ├── routes/       # Router -> middleware -> controller
 │       ├── controllers/
 │       ├── middleware/
 │       └── seed/
@@ -146,10 +136,8 @@ internship-tracker/
         ├── App.jsx
         ├── api/client.js
         ├── hooks/        # useApplications (poll + cleanup)
-        └── components/   # table, form, kanban, dock, stats, …
+        └── components/   # table, form, kanban, dock, stats, ...
 ```
-
----
 
 ## Frontend features
 
