@@ -2,9 +2,7 @@ import Application from '../models/Application.js';
 import Interview from '../models/Interview.js';
 import { APPLICATION_STAGES } from '../models/Application.js';
 
-// Custom endpoint: aggregates the whole pipeline into the numbers that actually
-// matter when job hunting - how many are live, how far they got, and what the
-// interview conversion looks like.
+// Dashboard numbers: totals, response rate, and a count per stage.
 export async function getPipelineStats(req, res, next) {
   try {
     const [byStage, totals, interviewCount] = await Promise.all([
@@ -31,8 +29,7 @@ export async function getPipelineStats(req, res, next) {
 
     const stageMap = Object.fromEntries(byStage.map((row) => [row._id, row]));
 
-    // Every stage is reported, including the empty ones, so the UI can render a
-    // stable set of columns instead of shifting as data changes.
+    // Always return every stage so the bars do not jump around when one is empty.
     const stages = APPLICATION_STAGES.map((stage) => ({
       stage,
       count: stageMap[stage]?.count ?? 0,
@@ -62,7 +59,7 @@ export async function getPipelineStats(req, res, next) {
   }
 }
 
-// Second aggregation: which companies am I investing the most effort in?
+// Applications grouped by company — useful for spotting where effort piles up.
 export async function getCompanyBreakdown(req, res, next) {
   try {
     const breakdown = await Application.aggregate([

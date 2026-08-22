@@ -43,8 +43,7 @@ export default function App() {
     api.getCompanies().then(setCompanies).catch(() => setCompanies([]));
   }, []);
 
-  // Dock badges must stay global even when the list is filtered, so they
-  // come from the stats endpoint rather than the current page of rows.
+  // Badge counts come from stats so filtering the list does not shrink them.
   const counts = useMemo(() => {
     const tally = { all: stats?.total ?? 0 };
     for (const row of stats?.stages ?? []) {
@@ -74,7 +73,7 @@ export default function App() {
     await afterMutation();
   }
 
-  // Dragging a card to another column is a partial update: only the stage moves.
+  // Drag-and-drop only patches the stage field.
   async function handleMoveStage(id, stage) {
     await api.updateApplication(id, { stage });
     await afterMutation();
@@ -85,8 +84,7 @@ export default function App() {
     setStage('all');
   }
 
-  // The dock is the only navigation now that the sidebar is gone, so every
-  // stage needs an entry or it becomes unreachable.
+  // One dock entry per stage — that is the only way to reach them.
   const stageItems = [
     { id: 'all', label: 'Dashboard', icon: 'grid' },
     { id: 'wishlist', label: 'Wishlist', icon: 'bookmark' },

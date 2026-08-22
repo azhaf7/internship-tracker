@@ -48,8 +48,7 @@ export function useApplications(stage = 'all', search = '') {
       if (!cancelled) load();
     }, REFRESH_INTERVAL_MS);
 
-    // Without this cleanup the interval keeps firing after the component
-    // unmounts, so it would poll forever and call setState on a dead component.
+    // Clear the poll when we leave the page.
     return () => {
       cancelled = true;
       clearInterval(intervalId);

@@ -11,15 +11,13 @@ export function validateObjectId(paramName = 'id') {
   };
 }
 
-// The client is never trusted: this runs before the controller so a malformed
-// body is rejected with 400 before it ever reaches the database.
+// Catch bad payloads here so the controller does not have to.
 export function validateApplicationBody({ partial = false } = {}) {
   return (req, res, next) => {
     const errors = [];
     const body = req.body ?? {};
     const has = (field) => body[field] !== undefined && body[field] !== null && body[field] !== '';
-    // On a partial update an absent field means "leave it alone", so it is only
-    // checked when the client actually sent it.
+    // PUT can send only the fields that changed.
     const shouldCheck = (field) => !partial || has(field);
 
     if (shouldCheck('companyId')) {

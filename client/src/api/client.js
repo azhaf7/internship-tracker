@@ -10,8 +10,7 @@ async function request(path, options = {}) {
   const payload = isJson ? await response.json() : null;
 
   if (!response.ok) {
-    // The API always answers errors as { error, details? }, so surface both:
-    // the details array is what tells the user which field was wrong.
+    // Prefer the API error message when there is one.
     const message = payload?.error ?? `Request failed with status ${response.status}`;
     const error = new Error(message);
     error.status = response.status;

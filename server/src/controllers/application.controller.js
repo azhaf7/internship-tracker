@@ -101,7 +101,7 @@ export async function deleteApplication(req, res, next) {
       throw ApiError.notFound(`No application with id ${req.params.id}`);
     }
 
-    // Interviews are meaningless without their application.
+    // Cascade: interviews belong to this application.
     await Interview.deleteMany({ applicationId: application._id });
 
     res.json({ message: 'Application deleted', id: application._id });
@@ -110,7 +110,7 @@ export async function deleteApplication(req, res, next) {
   }
 }
 
-// Relational endpoint: joins interviews onto a single application.
+// Interviews for one application, ordered by round.
 export async function listApplicationInterviews(req, res, next) {
   try {
     const application = await Application.findById(req.params.id).populate('companyId', 'name');

@@ -21,8 +21,7 @@ async function seed() {
     companies.map(({ key, ...company }) => company)
   );
 
-  // The seed data references companies by a readable key; map those onto the
-  // ObjectIds Mongo just generated so the relationships are real references.
+  // data.js uses keys like 'axis'; swap them for the real ObjectIds.
   const companyIdByKey = new Map(
     companies.map((company, index) => [company.key, createdCompanies[index]._id])
   );

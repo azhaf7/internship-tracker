@@ -35,7 +35,7 @@ export async function createCompany(req, res, next) {
   }
 }
 
-// Relational endpoint: every application and contact belonging to one company.
+// Applications and contacts that belong to one company.
 export async function listCompanyApplications(req, res, next) {
   try {
     const company = await Company.findById(req.params.id);

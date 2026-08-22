@@ -43,7 +43,7 @@ const applicationSchema = new mongoose.Schema(
       },
       default: 'internship'
     },
-    // Custom domain field: where this application currently sits in the pipeline.
+    // Wishlist → applied → interview → offer (or rejected).
     stage: {
       type: String,
       required: [true, 'Stage is required'],
@@ -94,8 +94,7 @@ const applicationSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Applying twice to the same role at the same company is a conflict, not a new
-// application. The unique index is what lets the controller answer with 409.
+// Same role at the same company should only exist once.
 applicationSchema.index({ companyId: 1, role: 1 }, { unique: true });
 
 export default mongoose.model('Application', applicationSchema);

@@ -28,7 +28,7 @@ export function errorHandler(err, req, res, next) {
     return res.status(400).json({ error: `'${err.value}' is not a valid ${err.path}` });
   }
 
-  // Raised by the unique indexes on companies.name and applications.companyId+role.
+  // Duplicate key from a unique index.
   if (err.code === 11000) {
     return res.status(409).json({
       error: 'That record already exists',
